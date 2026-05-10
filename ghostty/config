@@ -1,0 +1,17 @@
+# font-family = "Cascadia Code"
+font-family = "MesloLGS NF"
+font-size = 12
+
+quit-after-last-window-closed = true
+# Force a real block cursor
+cursor-style = block
+
+# Make it visible on white
+cursor-color = #000000
+cursor-text = #ffffff
+
+# Disable fancy blending
+cursor-opacity = 1
+
+# Theme
+theme = Dracula 
