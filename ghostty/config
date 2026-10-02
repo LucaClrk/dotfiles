@@ -14,4 +14,12 @@ cursor-text = #ffffff
 cursor-opacity = 1
 
 # Theme
-theme = Dracula 
+#
+# Light Theme
+# theme = breadog 
+
+# Cozy Theme
+theme = gruvbox-custom
+
+# Opacity
+# background-opacity = 0.9
