@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Switch the Neovim keyboard layout between azerty and qwerty.
+#
+#   nvim-layout           show the current layout
+#   nvim-layout qwerty    switch to QWERTY
+#   nvim-layout azerty    switch to AZERTY
+#   nvim-layout toggle    flip to the other one
+#
+# Writes one word to nvim's state dir; lua/config/layout.lua reads it at
+# startup. Takes effect the next time you start nvim.
+
+set -euo pipefail
+
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/nvim"
+state_file="$state_dir/keyboard-layout"
+default="azerty"
+
+usage() {
+    cat <<'EOF'
+Switch the Neovim keyboard layout.
+
+  nvim-layout           show the current layout
+  nvim-layout qwerty    switch to QWERTY
+  nvim-layout azerty    switch to AZERTY
+  nvim-layout toggle    flip to the other one
+
+Takes effect the next time you start nvim.
+EOF
+}
+
+current() {
+    if [[ -r "$state_file" ]]; then
+        tr -d '[:space:]' < "$state_file"
+    else
+        printf '%s' "$default"
+    fi
+}
+
+set_layout() {
+    mkdir -p "$state_dir"
+    printf '%s\n' "$1" > "$state_file"
+    printf 'keyboard layout: %s  (restart nvim to apply)\n' "$1"
+}
+
+case "${1-}" in
+    "")
+        now=$(current)
+        if [[ -r "$state_file" ]]; then
+            printf '%s\n' "$now"
+        else
+            printf '%s (default, not set yet)\n' "$now"
+        fi
+        ;;
+    azerty|qwerty)
+        set_layout "$1"
+        ;;
+    toggle)
+        if [[ "$(current)" == "qwerty" ]]; then
+            set_layout azerty
+        else
+            set_layout qwerty
+        fi
+        ;;
+    -h|--help|help)
+        usage
+        ;;
+    *)
+        printf 'nvim-layout: unknown argument %q\n\n' "$1" >&2
+        usage >&2
+        exit 2
+        ;;
+esac

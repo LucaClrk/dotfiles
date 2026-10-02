@@ -1,7 +1,7 @@
 local set = vim.opt_local
 
-set.textwidth = 80   -- move text to new line at 80 characters
-set.spell = true     -- Enable spell checking
+set.textwidth = 80 -- move text to new line at 80 characters
+set.spell = true -- Enable spell checking
 set.linebreak = true
 
 -- Toggle Line Numbers (Visual Selection)
@@ -386,15 +386,21 @@ local function safe_markdown_cmd(cmd, success_msg)
     end
 end
 
-vim.keymap.set("n", "<leader>tc",
+vim.keymap.set(
+    "n",
+    "<leader>tc",
     safe_markdown_cmd("g/- \\[ \\]/s/\\[ \\]/[x]/", "Marked all tasks as done"),
-    vim.tbl_extend("force", opts, { desc = "Mark all tasks done" }))
+    vim.tbl_extend("force", opts, { desc = "Mark all tasks done" })
+)
 
-vim.keymap.set("n", "<leader>tu",
+vim.keymap.set(
+    "n",
+    "<leader>tu",
     safe_markdown_cmd("g/- \\[x\\]/s/\\[x\\]/[ ]/", "Marked all tasks as undone"),
-    vim.tbl_extend("force", opts, { desc = "Mark all tasks undone" }))
+    vim.tbl_extend("force", opts, { desc = "Mark all tasks undone" })
+)
 
--- Toggle headings 
+-- Toggle headings
 local function toggle_heading(level)
     local line = vim.api.nvim_get_current_line()
     local cursor_pos = vim.api.nvim_win_get_cursor(0)
@@ -408,52 +414,39 @@ local function toggle_heading(level)
         -- Remove heading (toggle off)
         vim.api.nvim_set_current_line(content)
         -- Had to readjust cursor position
-        vim.api.nvim_win_set_cursor(0, {cursor_pos[1], math.max(0, cursor_pos[2] - level - 1)})
+        vim.api.nvim_win_set_cursor(0, { cursor_pos[1], math.max(0, cursor_pos[2] - level - 1) })
     else
         -- Add or change heading level
         local new_line = string.rep("#", level) .. " " .. content
         vim.api.nvim_set_current_line(new_line)
         -- Adjust cursor position
-        vim.api.nvim_win_set_cursor(0, {cursor_pos[1], cursor_pos[2] + level + 1})
+        vim.api.nvim_win_set_cursor(0, { cursor_pos[1], cursor_pos[2] + level + 1 })
     end
 end
 
 -- Heading keymaps 1-6
-vim.keymap.set("n", "<leader>h1", function() toggle_heading(1) end, { buffer = true, desc = "Toggle H1" })
-vim.keymap.set("n", "<leader>h2", function() toggle_heading(2) end, { buffer = true, desc = "Toggle H2" })
-vim.keymap.set("n", "<leader>h3", function() toggle_heading(3) end, { buffer = true, desc = "Toggle H3" })
-vim.keymap.set("n", "<leader>h4", function() toggle_heading(4) end, { buffer = true, desc = "Toggle H4" })
-vim.keymap.set("n", "<leader>h5", function() toggle_heading(5) end, { buffer = true, desc = "Toggle H5" })
-vim.keymap.set("n", "<leader>h6", function() toggle_heading(6) end, { buffer = true, desc = "Toggle H6" })
+vim.keymap.set("n", "<leader>h1", function()
+    toggle_heading(1)
+end, { buffer = true, desc = "Toggle H1" })
+vim.keymap.set("n", "<leader>h2", function()
+    toggle_heading(2)
+end, { buffer = true, desc = "Toggle H2" })
+vim.keymap.set("n", "<leader>h3", function()
+    toggle_heading(3)
+end, { buffer = true, desc = "Toggle H3" })
+vim.keymap.set("n", "<leader>h4", function()
+    toggle_heading(4)
+end, { buffer = true, desc = "Toggle H4" })
+vim.keymap.set("n", "<leader>h5", function()
+    toggle_heading(5)
+end, { buffer = true, desc = "Toggle H5" })
+vim.keymap.set("n", "<leader>h6", function()
+    toggle_heading(6)
+end, { buffer = true, desc = "Toggle H6" })
 
--- ** Header Colors **
--- highlights for markdown files to render highlights properly
+-- ** Header Colors ** (gruvbox palette)
 -- thx to Linkarzu for this
-
-local color1_bg = "#ff757f"
-local color2_bg = "#4fd6be"
-local color3_bg = "#7dcfff"
-local color4_bg = "#ff9e64"
-local color5_bg = "#7aa2f7"
-local color6_bg = "#c0caf5"
-local color_fg = "#1F2335"
-
-vim.cmd(
-    string.format([[highlight @markup.heading.1.markdown cterm=bold gui=bold guifg=%s guibg=%s]], color_fg, color1_bg)
-)
-vim.cmd(
-    string.format([[highlight @markup.heading.2.markdown cterm=bold gui=bold guifg=%s guibg=%s]], color_fg, color2_bg)
-)
-vim.cmd(
-    string.format([[highlight @markup.heading.3.markdown cterm=bold gui=bold guifg=%s guibg=%s]], color_fg, color3_bg)
-)
-vim.cmd(
-    string.format([[highlight @markup.heading.4.markdown cterm=bold gui=bold guifg=%s guibg=%s]], color_fg, color4_bg)
-)
-vim.cmd(
-    string.format([[highlight @markup.heading.5.markdown cterm=bold gui=bold guifg=%s guibg=%s]], color_fg, color5_bg)
-)
-vim.cmd(
-    string.format([[highlight @markup.heading.6.markdown cterm=bold gui=bold guifg=%s guibg=%s]], color_fg, color6_bg)
-)
-
+local heading_bg = { "#fb4934", "#8ec07c", "#83a598", "#fe8019", "#d3869b", "#ebdbb2" }
+for level, bg in ipairs(heading_bg) do
+    vim.api.nvim_set_hl(0, "@markup.heading." .. level .. ".markdown", { fg = "#282828", bg = bg, bold = true })
+end
