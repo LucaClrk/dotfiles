@@ -19,7 +19,10 @@ cursor-opacity = 1
 # theme = breadog 
 
 # Cozy Theme
-theme = gruvbox-custom
+# theme = Flexoki Light
+
+# Catppuccin (matches nvim catppuccin-frappe)
+theme = Catppuccin Frappe
 
 # Opacity
-# background-opacity = 0.9
+background-opacity = 0.95
