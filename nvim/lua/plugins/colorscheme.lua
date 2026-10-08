@@ -13,8 +13,6 @@ return {
     -- gruvbox: matches the ghostty gruvbox theme (bg #282828, fg #ebdbb2)
     {
         "ellisonleao/gruvbox.nvim",
-        lazy = false,
-        priority = 1000,
         opts = {
             italic = {
                 strings = false,
