@@ -52,3 +52,5 @@ vim.opt.colorcolumn = "80"
 vim.opt.clipboard:append("unnamedplus")
 vim.opt.mouse = "a"
 vim.opt.cursorline = true
+
+vim.opt.termguicolors = true
