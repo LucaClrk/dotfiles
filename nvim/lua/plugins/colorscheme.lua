@@ -1,6 +1,15 @@
+-- Installs + configures theme plugins (does not pick one).
 -- All themes stay installed so the pickers (<leader>th, <leader>ths) can switch.
 -- The active one is set in lua/config/colorscheme.lua.
 return {
+    {
+        "catppuccin/nvim",
+        name = "catppuccin",
+        priority = 1000,
+        opts = {
+            flavour = "frappe", -- latte, frappe, macchiato, mocha
+        },
+    },
     -- gruvbox: matches the ghostty gruvbox theme (bg #282828, fg #ebdbb2)
     {
         "ellisonleao/gruvbox.nvim",
