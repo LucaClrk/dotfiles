@@ -25,7 +25,7 @@ return {
 
         require("lualine").setup({
             options = {
-                theme = "auto", -- follows the active colorscheme (gruvbox)
+                theme = "auto", -- follows the active colorscheme
                 component_separators = { left = "|", right = "|" },
                 section_separators = { left = "|", right = "" },
             },
