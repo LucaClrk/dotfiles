@@ -49,6 +49,12 @@
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
 
+;; Stamp CLOSED: [time] when a task is marked DONE, so agenda log mode shows
+;; finished tasks next to clocked time. State-change notes go into :LOGBOOK:.
+(after! org
+  (setq org-log-done 'time
+        org-log-into-drawer t))
+
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `with-eval-after-load' block, otherwise Doom's defaults may override your
