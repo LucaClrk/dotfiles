@@ -90,3 +90,9 @@
 ;; Resize frames by pixel instead of by character cell, so tiling window
 ;; managers (AeroSpace, Hyprland) can size the frame exactly.
 (setq frame-resize-pixelwise t)
+
+;; "jj" as escape in insert mode, same as in Neovim. Other states are excluded
+;; so "jj" still moves down two lines in normal and visual mode.
+(after! evil-escape
+  (setq evil-escape-key-sequence "jj"
+        evil-escape-excluded-states '(normal visual multiedit emacs motion)))
