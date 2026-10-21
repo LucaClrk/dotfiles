@@ -95,4 +95,7 @@
 ;; so "jj" still moves down two lines in normal and visual mode.
 (after! evil-escape
   (setq evil-escape-key-sequence "jj"
+        ;; Repeating the same key is slower than alternating keys, so the
+        ;; default 0.1s window often misses the second "j".
+        evil-escape-delay 0.3
         evil-escape-excluded-states '(normal visual multiedit emacs motion)))
