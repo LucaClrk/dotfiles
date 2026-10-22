@@ -72,27 +72,33 @@
   (set-popup-rule! "^\\*notmuch" :ignore t)
   (set-popup-rule! "^\\*subject:" :ignore t))
 
-;; Google Calendar through org-gcal: `M-x org-gcal-sync' syncs each calendar
-;; both ways with an org file in `org-directory', so its events show in the
-;; agenda and in `=calendar' (SPC o c). New events are posted with
-;; `org-gcal-post-at-point'. The OAuth client is a Google Cloud "Desktop app"
-;; client whose downloaded JSON stays outside this repository; the OAuth token
-;; is kept in oauth2-auto's GPG-encrypted plstore.
-(defvar my/gcal-client-file "~/.config/org-gcal/client_secret.json"
-  "Google OAuth client JSON downloaded from Google Cloud Console.")
+;; Google Calendar through org-gcal: `M-x org-gcal-sync' syncs the calendar
+;; both ways with ~/org/calendar.org, so its events show in the agenda and in
+;; `=calendar' (SPC o c). New events are posted with `org-gcal-post-at-point'.
+;; The OAuth token is kept in oauth2-auto's GPG-encrypted plstore.
+;;
+;; org-gcal takes a single OAuth client, and the robaws.be one is an Internal
+;; Workspace app that only signs in robaws.be accounts, so each laptop syncs the
+;; calendar of one account: the one whose Google Cloud "Desktop app" client JSON
+;; is saved, outside this repository, as ~/.config/org-gcal/ACCOUNT.json (e.g.
+;; luca@robaws.be.json on the work laptop, lucadeclerck@gmail.com.json on the
+;; personal one).
+(defvar my/gcal-client-dir "~/.config/org-gcal/"
+  "Directory with this laptop's Google OAuth client, named ACCOUNT.json.")
 
 ;; org-gcal reads the client when it loads, so set it beforehand.
-(when (file-exists-p my/gcal-client-file)
+(when-let* ((file (car (file-expand-wildcards
+                        (concat my/gcal-client-dir "*@*.json")))))
   (let ((client (with-temp-buffer
-                  (insert-file-contents my/gcal-client-file)
+                  (insert-file-contents file)
                   (gethash "installed" (json-parse-buffer)))))
     (setq org-gcal-client-id (gethash "client_id" client)
-          org-gcal-client-secret (gethash "client_secret" client))))
+          org-gcal-client-secret (gethash "client_secret" client)
+          org-gcal-fetch-file-alist
+          `((,(file-name-base file) . "~/org/calendar.org")))))
 
-(setq org-gcal-fetch-file-alist
-      '(("luca@robaws.be" . "~/org/calendar.org"))
-      ;; Ask for the plstore passphrase once per Emacs session.
-      plstore-cache-passphrase-for-symmetric-encryption t
+;; Ask for the plstore passphrase once per Emacs session.
+(setq plstore-cache-passphrase-for-symmetric-encryption t
       ;; Ask for it in the minibuffer. Doom sets this only once epa loads, and
       ;; plstore uses epg without it, so gpg fell back to its terminal pinentry,
       ;; which can't run in GUI Emacs, and the token was never saved.
