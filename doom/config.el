@@ -9,14 +9,36 @@
 (setq user-full-name "Luca De Clerck"
       user-mail-address "luca@robaws.be")
 
-;; Gmail through notmuch + lieer: `gmi sync' keeps ~/.mail/robaws and Gmail's
-;; labels (as notmuch tags) in sync, and `gmi send' sends through the Gmail API,
-;; which also files the message under Sent, so no SMTP setup is needed.
-(setq +notmuch-mail-folder "~/.mail/robaws")
+;; Gmail through notmuch + lieer: each account is a lieer repository that
+;; `gmi sync' keeps in sync with Gmail (labels become notmuch tags), and
+;; `gmi send' sends through the Gmail API, which also files the message under
+;; Sent, so no SMTP setup is needed. New mail is sent from the primary address
+;; (notmuch's user.primary_email); replies from the address they were sent to.
+(defvar my/mail-accounts
+  '(("luca@robaws.be" . "~/.mail/robaws")
+    ("lucadeclerck@gmail.com" . "~/.mail/gmail"))
+  "Address and lieer repository of each Gmail account.")
+
+(setq +notmuch-sync-backend
+      (concat (mapconcat (lambda (account) (concat "gmi sync -C " (cdr account)))
+                         my/mail-accounts " && ")
+              " && notmuch new"))
+
+;; Gmail sends as the signed-in account, so send through the repository of the
+;; account in the From header.
+(defun my/mail-use-sender-account-h ()
+  (let* ((from (cadr (mail-extract-address-components (message-fetch-field "from"))))
+         (repo (or (cdr (assoc-string from my/mail-accounts t))
+                   (user-error "No Gmail account for sender %s" from))))
+    (setq-local message-sendmail-extra-arguments
+                `("send" "--quiet" "-t" "-C" ,(expand-file-name repo)))))
+
 (after! notmuch
-  (setq sendmail-program "gmi"
-        message-sendmail-extra-arguments
-        `("send" "--quiet" "-t" "-C" ,(expand-file-name +notmuch-mail-folder))))
+  (setq sendmail-program "gmi")
+  (add-hook 'message-send-mail-hook #'my/mail-use-sender-account-h)
+  (dolist (search '((:name "work"     :query "path:robaws/** tag:inbox not tag:trash" :key "w")
+                    (:name "personal" :query "path:gmail/** tag:inbox not tag:trash"  :key "p")))
+    (add-to-list 'notmuch-saved-searches search t)))
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;

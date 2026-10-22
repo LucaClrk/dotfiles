@@ -1,5 +1,6 @@
 # notmuch config, symlinked to ~/.config/notmuch/default/config.
-# Mail is synced from Gmail by lieer (gmi) into ~/.mail/robaws.
+# Mail is synced from Gmail by lieer (gmi), one repository per account:
+# ~/.mail/robaws (primary) and ~/.mail/gmail.
 
 [database]
 path=.mail
@@ -7,6 +8,7 @@ path=.mail
 [user]
 name=Luca De Clerck
 primary_email=luca@robaws.be
+other_email=lucadeclerck@gmail.com
 
 # lieer adds messages and their Gmail labels to the database itself, so
 # `notmuch new` must not tag them inbox/unread, and must skip lieer's state files.
