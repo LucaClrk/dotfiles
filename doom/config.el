@@ -72,6 +72,22 @@
   (add-hook 'evil-insert-state-exit-hook
             (lambda () (my/org-set-emphasis-markers-visible nil)) nil t))
 
+;; Org fontifies a single level of emphasis, so the inner markers of nested
+;; markup like _*text*_ are never styled or hidden. After each match, fontify
+;; the emphasis contents too (recursively), then continue past it.
+(defadvice! my/org-fontify-nested-emphasis-a (fn limit)
+  :around #'org-do-emphasis-faces
+  (when (funcall fn limit)
+    (let* ((open (1- (point)))
+           (end (or (next-single-property-change open 'org-emphasis) (point-max))))
+      (unless (memq (char-after open) '(?~ ?=))
+        (save-restriction
+          (narrow-to-region (1+ open) (1- end))
+          (goto-char (point-min))
+          (while (org-do-emphasis-faces (point-max)))))
+      (goto-char end))
+    t))
+
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `with-eval-after-load' block, otherwise Doom's defaults may override your
