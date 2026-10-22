@@ -36,9 +36,26 @@
 (after! notmuch
   (setq sendmail-program "gmi")
   (add-hook 'message-send-mail-hook #'my/mail-use-sender-account-h)
-  (dolist (search '((:name "work"     :query "path:robaws/** tag:inbox not tag:trash" :key "w")
-                    (:name "personal" :query "path:gmail/** tag:inbox not tag:trash"  :key "p")))
-    (add-to-list 'notmuch-saved-searches search t)))
+
+  ;; Spam and trash are hidden from every other search by notmuch's
+  ;; search.exclude_tags; a query that names them shows them.
+  (setq notmuch-saved-searches
+        '((:name "unread"   :query "tag:inbox tag:unread"     :key "u")
+          (:name "inbox"    :query "tag:inbox"                :key "i")
+          (:name "work"     :query "tag:inbox path:robaws/**" :key "w")
+          (:name "personal" :query "tag:inbox path:gmail/**"  :key "p")
+          (:name "flagged"  :query "tag:flagged"              :key "f")
+          (:name "sent"     :query "tag:sent"                 :key "s")
+          (:name "drafts"   :query "tag:draft"                :key "d")
+          (:name "spam"     :query "tag:spam"                 :key "S")
+          (:name "trash"    :query "tag:trash"                :key "t"))
+        ;; List every search, also while it has no mail.
+        notmuch-show-empty-saved-searches t)
+
+  ;; Use the whole window for the home screen, mail lists and threads, like
+  ;; Gmail, instead of Doom's sidebar and split popups. `q' goes back.
+  (set-popup-rule! "^\\*notmuch" :ignore t)
+  (set-popup-rule! "^\\*subject:" :ignore t))
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
