@@ -40,7 +40,7 @@
   ;; Spam and trash are hidden from every other search by notmuch's
   ;; search.exclude_tags; a query that names them shows them.
   (setq notmuch-saved-searches
-        '((:name "unread"   :query "tag:inbox tag:unread"     :key "u")
+        '((:name "unread"   :query "tag:inbox tag:unread path:robaws/**" :key "u")
           (:name "inbox"    :query "tag:inbox"                :key "i")
           (:name "work"     :query "tag:inbox path:robaws/**" :key "w")
           (:name "personal" :query "tag:inbox path:gmail/**"  :key "p")
