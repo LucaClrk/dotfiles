@@ -80,7 +80,7 @@
   (when (funcall fn limit)
     (let* ((open (1- (point)))
            (end (or (next-single-property-change open 'org-emphasis) (point-max))))
-      (unless (memq (char-after open) '(?~ ?=))
+      (unless (or (memq (char-after open) '(?~ ?=)) (org-at-comment-p))
         (save-restriction
           (narrow-to-region (1+ open) (1- end))
           (goto-char (point-min))
