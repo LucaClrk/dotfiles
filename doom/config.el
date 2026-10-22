@@ -119,6 +119,22 @@
         org-log-into-drawer t
         org-hide-emphasis-markers t))
 
+;; Keep a running clock across Emacs restarts. Quitting no longer offers to
+;; clock out; it saves the running clock, and the next start resumes its open
+;; CLOCK: line, so the time Emacs was closed still counts. Doom only persists
+;; the clock history.
+(after! org-clock
+  (setq org-clock-persist t
+        org-clock-persist-query-resume nil)
+  (setopt org-clock-ask-before-exiting nil)
+  ;; The open CLOCK: line on disk is what gets resumed, so save it right away.
+  (add-hook! 'org-clock-in-hook
+    (with-current-buffer (marker-buffer org-clock-marker)
+      (save-buffer))))
+
+;; org-clock loads lazily, so resume a saved clock once Emacs is idle.
+(run-with-idle-timer 1 nil (lambda () (require 'org-clock) (org-clock-load)))
+
 ;; Show emphasis markers while in insert state so they're easy to edit, and
 ;; hide them again on leaving it.
 (defun my/org-set-emphasis-markers-visible (visible)
