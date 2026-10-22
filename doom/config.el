@@ -60,6 +60,18 @@
         org-log-into-drawer t
         org-hide-emphasis-markers t))
 
+;; Show emphasis markers while in insert state so they're easy to edit, and
+;; hide them again on leaving it.
+(defun my/org-set-emphasis-markers-visible (visible)
+  (setq-local org-hide-emphasis-markers (not visible))
+  (font-lock-flush))
+
+(add-hook! 'org-mode-hook
+  (add-hook 'evil-insert-state-entry-hook
+            (lambda () (my/org-set-emphasis-markers-visible t)) nil t)
+  (add-hook 'evil-insert-state-exit-hook
+            (lambda () (my/org-set-emphasis-markers-visible nil)) nil t))
+
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `with-eval-after-load' block, otherwise Doom's defaults may override your
