@@ -50,7 +50,18 @@
           (:name "spam"     :query "tag:spam"                 :key "S")
           (:name "trash"    :query "tag:trash"                :key "t"))
         ;; List every search, also while it has no mail.
-        notmuch-show-empty-saved-searches t)
+        notmuch-show-empty-saved-searches t
+        ;; The logo image has its own keymap, which steals keys like `i' below
+        ;; while the cursor is on it.
+        notmuch-show-logo nil)
+
+  ;; On the home screen a search's key opens it directly; elsewhere it's `J'
+  ;; and then the key. The home screen is read-only, so the evil editing keys
+  ;; these shadow (i, d, p, ...) aren't missed.
+  (dolist (search notmuch-saved-searches)
+    (let ((query (plist-get search :query)))
+      (map! :map notmuch-hello-mode-map
+            :n (plist-get search :key) (cmd! (notmuch-search query)))))
 
   ;; Use the whole window for the home screen, mail lists and threads, like
   ;; Gmail, instead of Doom's sidebar and split popups. `q' goes back.
