@@ -58,6 +58,10 @@
   ;; On the home screen a search's key opens it directly; elsewhere it's `J'
   ;; and then the key. The home screen is read-only, so the evil editing keys
   ;; these shadow (i, d, p, ...) aren't missed.
+  ;; `d' toggles this tag. Its default, "deleted", would only become a new
+  ;; Gmail label; lieer maps "trash" to Gmail's Trash.
+  (setq evil-collection-notmuch-delete-tag "trash")
+
   (dolist (search notmuch-saved-searches)
     (let ((query (plist-get search :query)))
       (map! :map notmuch-hello-mode-map
