@@ -6,8 +6,17 @@
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
-;; (setq user-full-name "John Doe"
-;;       user-mail-address "john@doe.com")
+(setq user-full-name "Luca De Clerck"
+      user-mail-address "luca@robaws.be")
+
+;; Gmail through notmuch + lieer: `gmi sync' keeps ~/.mail/robaws and Gmail's
+;; labels (as notmuch tags) in sync, and `gmi send' sends through the Gmail API,
+;; which also files the message under Sent, so no SMTP setup is needed.
+(setq +notmuch-mail-folder "~/.mail/robaws")
+(after! notmuch
+  (setq sendmail-program "gmi"
+        message-sendmail-extra-arguments
+        `("send" "--quiet" "-t" "-C" ,(expand-file-name +notmuch-mail-folder))))
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;

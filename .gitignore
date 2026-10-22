@@ -1,1 +1,5 @@
 .DS_Store
+
+# Never commit mail credentials: lieer OAuth token, Google OAuth client secret
+.credentials*
+client_secret*.json

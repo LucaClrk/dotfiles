@@ -1,0 +1,18 @@
+# notmuch config, symlinked to ~/.config/notmuch/default/config.
+# Mail is synced from Gmail by lieer (gmi) into ~/.mail/robaws.
+
+[database]
+path=.mail
+
+[user]
+name=Luca De Clerck
+primary_email=luca@robaws.be
+
+# lieer adds messages and their Gmail labels to the database itself, so
+# `notmuch new` must not tag them inbox/unread, and must skip lieer's state files.
+[new]
+tags=new
+ignore=/.*[.](json|lock|bak)$/
+
+[search]
+exclude_tags=trash;spam
