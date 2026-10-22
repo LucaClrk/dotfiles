@@ -72,6 +72,65 @@
   (set-popup-rule! "^\\*notmuch" :ignore t)
   (set-popup-rule! "^\\*subject:" :ignore t))
 
+;; Google Calendar through org-gcal: `M-x org-gcal-sync' syncs each calendar
+;; both ways with an org file in `org-directory', so its events show in the
+;; agenda and in `=calendar' (SPC o c). New events are posted with
+;; `org-gcal-post-at-point'. The OAuth client is a Google Cloud "Desktop app"
+;; client whose downloaded JSON stays outside this repository; the OAuth token
+;; is kept in oauth2-auto's GPG-encrypted plstore.
+(defvar my/gcal-client-file "~/.config/org-gcal/client_secret.json"
+  "Google OAuth client JSON downloaded from Google Cloud Console.")
+
+;; org-gcal reads the client when it loads, so set it beforehand.
+(when (file-exists-p my/gcal-client-file)
+  (let ((client (with-temp-buffer
+                  (insert-file-contents my/gcal-client-file)
+                  (gethash "installed" (json-parse-buffer)))))
+    (setq org-gcal-client-id (gethash "client_id" client)
+          org-gcal-client-secret (gethash "client_secret" client))))
+
+(setq org-gcal-fetch-file-alist
+      '(("luca@robaws.be" . "~/org/calendar.org"))
+      ;; Ask for the plstore passphrase once per Emacs session.
+      plstore-cache-passphrase-for-symmetric-encryption t
+      ;; Ask for it in the minibuffer. Doom sets this only once epa loads, and
+      ;; plstore uses epg without it, so gpg fell back to its terminal pinentry,
+      ;; which can't run in GUI Emacs, and the token was never saved.
+      epg-pinentry-mode 'loopback)
+
+(map! :leader :desc "Calendar" "o c" #'=calendar)
+
+;; Sync shortly after Emacs starts (which asks for the plstore passphrase) and
+;; then every 15 minutes, silently. It starts only once a first manual
+;; `org-gcal-sync' has logged in, so a timer never opens the browser login.
+(defun my/gcal-auto-sync ()
+  (when (bound-and-true-p org-gcal-client-id)
+    (require 'org-gcal)
+    (when (and (file-exists-p oauth2-auto-plstore)
+               (not org-gcal--sync-lock))
+      (org-gcal-sync nil t))))
+
+(run-with-idle-timer 5 nil #'my/gcal-auto-sync)
+(run-with-timer (* 15 60) (* 15 60) #'my/gcal-auto-sync)
+
+;; org-gcal edits the calendar files but leaves them unsaved, so save them once
+;; a sync has stopped updating events for a moment.
+(defvar my/gcal-unsaved-buffers nil)
+(defvar my/gcal-save-timer nil)
+
+(defun my/gcal-save-buffers ()
+  (dolist (buffer my/gcal-unsaved-buffers)
+    (when (buffer-live-p buffer)
+      (with-current-buffer buffer (save-buffer))))
+  (setq my/gcal-unsaved-buffers nil))
+
+(defun my/gcal-save-soon-h (&rest _)
+  (cl-pushnew (current-buffer) my/gcal-unsaved-buffers)
+  (when (timerp my/gcal-save-timer) (cancel-timer my/gcal-save-timer))
+  (setq my/gcal-save-timer (run-with-timer 2 nil #'my/gcal-save-buffers)))
+
+(add-hook 'org-gcal-after-update-entry-functions #'my/gcal-save-soon-h)
+
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
 ;; - `doom-font' -- the primary font to use
