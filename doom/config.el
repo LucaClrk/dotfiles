@@ -54,9 +54,11 @@
 
 ;; Stamp CLOSED: [time] when a task is marked DONE, so agenda log mode shows
 ;; finished tasks next to clocked time. State-change notes go into :LOGBOOK:.
+;; Hide emphasis markers (*bold*, +strike+, ...) and show only the styled text.
 (after! org
   (setq org-log-done 'time
-        org-log-into-drawer t))
+        org-log-into-drawer t
+        org-hide-emphasis-markers t))
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
