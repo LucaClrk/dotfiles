@@ -24,6 +24,28 @@
                          my/mail-accounts " && ")
               " && notmuch new"))
 
+;; Doom syncs only on `+notmuch/update', so also sync in the background shortly
+;; after startup and then every 5 minutes, refreshing open mail buffers. A sync
+;; still running is left alone; its output is in the " *mail sync*" buffer.
+(defvar my/mail-sync-process nil)
+
+(defun my/mail-auto-sync ()
+  (unless (process-live-p my/mail-sync-process)
+    (setq my/mail-sync-process
+          (start-process-shell-command "mail-sync" " *mail sync*"
+                                       +notmuch-sync-backend))
+    (set-process-sentinel
+     my/mail-sync-process
+     (lambda (process _event)
+       (unless (process-live-p process)
+         (cond ((/= (process-exit-status process) 0)
+                (message "Mail sync failed, see the \" *mail sync*\" buffer"))
+               ((featurep 'notmuch)
+                (notmuch-refresh-all-buffers))))))))
+
+(run-with-idle-timer 10 nil #'my/mail-auto-sync)
+(run-with-timer (* 5 60) (* 5 60) #'my/mail-auto-sync)
+
 ;; Gmail sends as the signed-in account, so send through the repository of the
 ;; account in the From header.
 (defun my/mail-use-sender-account-h ()
