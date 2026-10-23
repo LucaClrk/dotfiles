@@ -14,10 +14,13 @@
 ;; `gmi send' sends through the Gmail API, which also files the message under
 ;; Sent, so no SMTP setup is needed. New mail is sent from the primary address
 ;; (notmuch's user.primary_email); replies from the address they were sent to.
+;; Only accounts whose repository exists on this laptop are used, so the
+;; personal laptop, which has no robaws repository, syncs just gmail.
 (defvar my/mail-accounts
-  '(("luca@robaws.be" . "~/.mail/robaws")
-    ("lucadeclerck@gmail.com" . "~/.mail/gmail"))
-  "Address and lieer repository of each Gmail account.")
+  (seq-filter (lambda (account) (file-directory-p (cdr account)))
+              '(("luca@robaws.be" . "~/.mail/robaws")
+                ("lucadeclerck@gmail.com" . "~/.mail/gmail")))
+  "Address and lieer repository of each Gmail account on this laptop.")
 
 (setq +notmuch-sync-backend
       (concat (mapconcat (lambda (account) (concat "gmi sync -C " (cdr account)))
