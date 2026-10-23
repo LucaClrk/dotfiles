@@ -285,9 +285,11 @@
                '("LaTeXML" "latexmlc --dest=%s.html %t" TeX-run-command nil
                  (latex-mode LaTeX-mode) :help "Convert to HTML and CSS with LaTeXML")))
 
-;; Every git repository under ~/Documents/github shows up in `SPC p p' after
-;; `M-x projectile-discover-projects-in-search-path'.
-(setq projectile-project-search-path '("~/Documents/github/"))
+;; Every git repository in these folders shows up in `SPC p p', found the first
+;; time it runs in a session. (DIR . 0) is a project itself. A folder missing
+;; on a laptop, like IdeaProjects on the personal one, is skipped.
+(setq projectile-project-search-path
+      '("~/Documents/Projects/" "~/IdeaProjects/" ("~/dotfiles/" . 0)))
 
 ;; Astro: .astro files in web-mode, with the Astro language server through
 ;; Eglot. It needs a TypeScript install, so it uses the global one from
