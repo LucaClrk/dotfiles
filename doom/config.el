@@ -97,8 +97,12 @@
           org-gcal-fetch-file-alist
           `((,(file-name-base file) . "~/org/calendar.org")))))
 
-;; Ask for the plstore passphrase once per Emacs session.
-(setq plstore-cache-passphrase-for-symmetric-encryption t
+;; Encrypt the plstore to this laptop's passphrase-less "emacs-plstore" GPG key,
+;; so syncing never asks for a passphrase. Create it once per laptop with
+;;   gpg --batch --passphrase '' --quick-gen-key emacs-plstore default default never
+;; Without that key plstore falls back to a passphrase, asked once per session.
+(setq plstore-encrypt-to "emacs-plstore"
+      plstore-cache-passphrase-for-symmetric-encryption t
       ;; Ask for it in the minibuffer. Doom sets this only once epa loads, and
       ;; plstore uses epg without it, so gpg fell back to its terminal pinentry,
       ;; which can't run in GUI Emacs, and the token was never saved.
@@ -285,9 +289,13 @@
                '("LaTeXML" "latexmlc --dest=%s.html %t" TeX-run-command nil
                  (latex-mode LaTeX-mode) :help "Convert to HTML and CSS with LaTeXML")))
 
-;; Every git repository under ~/Documents/github shows up in `SPC p p' after
-;; `M-x projectile-discover-projects-in-search-path'.
-(setq projectile-project-search-path '("~/Projects/" "~/Documents/Projects/" "~/IdeaProjects/" ("~/dotfiles/" . 0))
+;; Every git repository in these folders shows up in `SPC p p', found the first
+;; time it runs in a session. (DIR . 0) is a project itself. A folder missing
+;; on a laptop is skipped, so this lists both laptops' folders: ~/Projects on
+;; the personal one, ~/Documents/Projects and ~/IdeaProjects on the work one.
+(setq projectile-project-search-path
+      '("~/Projects/" "~/Documents/Projects/" "~/IdeaProjects/"
+        ("~/dotfiles/" . 0)))
 
 ;; Astro: .astro files in web-mode, with the Astro language server through
 ;; Eglot. It needs a TypeScript install, so it uses the global one from
