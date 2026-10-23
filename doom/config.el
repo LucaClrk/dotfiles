@@ -291,9 +291,11 @@
 
 ;; Every git repository in these folders shows up in `SPC p p', found the first
 ;; time it runs in a session. (DIR . 0) is a project itself. A folder missing
-;; on a laptop, like IdeaProjects on the personal one, is skipped.
+;; on a laptop is skipped, so this lists both laptops' folders: ~/Projects on
+;; the personal one, ~/Documents/Projects and ~/IdeaProjects on the work one.
 (setq projectile-project-search-path
-      '("~/Documents/Projects/" "~/IdeaProjects/" ("~/dotfiles/" . 0)))
+      '("~/Projects/" "~/Documents/Projects/" "~/IdeaProjects/"
+        ("~/dotfiles/" . 0)))
 
 ;; Astro: .astro files in web-mode, with the Astro language server through
 ;; Eglot. It needs a TypeScript install, so it uses the global one from
