@@ -97,8 +97,12 @@
           org-gcal-fetch-file-alist
           `((,(file-name-base file) . "~/org/calendar.org")))))
 
-;; Ask for the plstore passphrase once per Emacs session.
-(setq plstore-cache-passphrase-for-symmetric-encryption t
+;; Encrypt the plstore to this laptop's passphrase-less "emacs-plstore" GPG key,
+;; so syncing never asks for a passphrase. Create it once per laptop with
+;;   gpg --batch --passphrase '' --quick-gen-key emacs-plstore default default never
+;; Without that key plstore falls back to a passphrase, asked once per session.
+(setq plstore-encrypt-to "emacs-plstore"
+      plstore-cache-passphrase-for-symmetric-encryption t
       ;; Ask for it in the minibuffer. Doom sets this only once epa loads, and
       ;; plstore uses epg without it, so gpg fell back to its terminal pinentry,
       ;; which can't run in GUI Emacs, and the token was never saved.
