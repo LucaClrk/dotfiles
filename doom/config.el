@@ -276,3 +276,11 @@
         ;; default 0.1s window often misses the second "j".
         evil-escape-delay 0.3
         evil-escape-excluded-states '(normal visual multiedit emacs motion)))
+
+;; LaTeXML in the LaTeX compile menu (C-c C-c): writes FILE.html with
+;; LaTeXML.css and a class stylesheet (ltx-article.css, ...) next to the .tex
+;; file, with math as MathML.
+(after! tex
+  (add-to-list 'TeX-command-list
+               '("LaTeXML" "latexmlc --dest=%s.html %t" TeX-run-command nil
+                 (latex-mode LaTeX-mode) :help "Convert to HTML and CSS with LaTeXML")))
