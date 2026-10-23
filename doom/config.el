@@ -287,7 +287,7 @@
 
 ;; Every git repository under ~/Documents/github shows up in `SPC p p' after
 ;; `M-x projectile-discover-projects-in-search-path'.
-(setq projectile-project-search-path '("~/Documents/github/"))
+(setq projectile-project-search-path '("~/Projects/" "~/Documents/Projects/" "~/IdeaProjects/" ("~/dotfiles/" . 0))
 
 ;; Astro: .astro files in web-mode, with the Astro language server through
 ;; Eglot. It needs a TypeScript install, so it uses the global one from
