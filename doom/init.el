@@ -81,7 +81,7 @@
        ;;eshell            ; the elisp shell that works everywhere
        ;;shell             ; simple shell REPL for Emacs
        ;;term              ; basic terminal emulator for Emacs
-       ;;vterm             ; almost the best terminal emulation in Emacs
+       vterm               ; almost the best terminal emulation in Emacs
        ;;ghostel           ; the best terminal emulation in Emacs
 
        :checkers
@@ -147,7 +147,7 @@
        json                ; At least it ain't XML
        ;;janet             ; Fun fact: Janet is me!
        (java +lsp)         ; the poster child for carpal tunnel syndrome
-       ;;javascript        ; all(hope(abandon(ye(who(enter(here))))))
+       (javascript +lsp)   ; all(hope(abandon(ye(who(enter(here))))))
        ;;julia             ; a better, faster MATLAB
        ;;kotlin            ; a better, slicker Java(Script)
        (latex +latexmk +cdlatex +fold +lsp) ; writing papers in Emacs has never been so fun

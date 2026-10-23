@@ -284,3 +284,24 @@
   (add-to-list 'TeX-command-list
                '("LaTeXML" "latexmlc --dest=%s.html %t" TeX-run-command nil
                  (latex-mode LaTeX-mode) :help "Convert to HTML and CSS with LaTeXML")))
+
+;; Every git repository under ~/Documents/github shows up in `SPC p p' after
+;; `M-x projectile-discover-projects-in-search-path'.
+(setq projectile-project-search-path '("~/Documents/github/"))
+
+;; Astro: .astro files in web-mode, with the Astro language server through
+;; Eglot. It needs a TypeScript install, so it uses the global one from
+;; `npm i -g @astrojs/language-server typescript'.
+(define-derived-mode astro-mode web-mode "Astro")
+(add-to-list 'auto-mode-alist '("\\.astro\\'" . astro-mode))
+(after! web-mode
+  (add-to-list 'web-mode-engines-alist '("astro" . "\\.astro\\'")))
+(add-hook 'astro-mode-hook #'eglot-ensure)
+(after! eglot
+  (add-to-list 'eglot-server-programs
+               `(astro-mode "astro-ls" "--stdio"
+                 :initializationOptions
+                 (:typescript
+                  (:tsdk ,(expand-file-name
+                           "typescript/lib"
+                           (string-trim (shell-command-to-string "npm root -g"))))))))
