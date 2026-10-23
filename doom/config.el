@@ -12,10 +12,10 @@
 ;; Gmail through notmuch + lieer: each account is a lieer repository that
 ;; `gmi sync' keeps in sync with Gmail (labels become notmuch tags), and
 ;; `gmi send' sends through the Gmail API, which also files the message under
-;; Sent, so no SMTP setup is needed. New mail is sent from the primary address
-;; (notmuch's user.primary_email); replies from the address they were sent to.
+;; Sent, so no SMTP setup is needed. New mail is sent from the first account;
+;; replies from the address they were sent to.
 ;; Only accounts whose repository exists on this laptop are used, so the
-;; personal laptop, which has no robaws repository, syncs just gmail.
+;; personal laptop, which has no robaws repository, syncs and sends just gmail.
 (defvar my/mail-accounts
   (seq-filter (lambda (account) (file-directory-p (cdr account)))
               '(("luca@robaws.be" . "~/.mail/robaws")
@@ -61,6 +61,19 @@
 (after! notmuch
   (setq sendmail-program "gmi")
   (add-hook 'message-send-mail-hook #'my/mail-use-sender-account-h)
+
+  ;; notmuch starts new mail and forwards from user.primary_email (robaws),
+  ;; which the personal laptop doesn't have, so start them from the first
+  ;; account on this laptop instead. Replies already come with a From.
+  (defadvice! my/mail-default-from-a (args)
+    :filter-args #'notmuch-mua-mail
+    (let ((headers (nth 2 args)))
+      (if (or (null my/mail-accounts) (assoc-string "from" headers t))
+          args
+        `(,(nth 0 args) ,(nth 1 args)
+          ((From . ,(message-make-from (notmuch-user-name) (caar my/mail-accounts)))
+           ,@headers)
+          ,@(nthcdr 3 args)))))
 
   ;; Spam and trash are hidden from every other search by notmuch's
   ;; search.exclude_tags; a query that names them shows them.
