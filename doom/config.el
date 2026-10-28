@@ -274,6 +274,22 @@
       (goto-char end))
     t))
 
+;; Markdown export borrows HTML's smart quotes and special strings, so quotes,
+;; "--" and "..." became &ldquo;, &#x2013; and &#x2026;, which only HTML-aware
+;; viewers show as characters. Write the UTF-8 characters instead, as the
+;; ASCII exporter does with its utf-8 charset.
+(defadvice! my/org-md-plain-text-utf-8-a (fn text info)
+  :around #'org-md-plain-text
+  (when (plist-get info :with-smart-quotes)
+    (setq text (org-export-activate-smart-quotes text :utf-8 info)))
+  (when (plist-get info :with-special-strings)
+    (setq text (replace-regexp-in-string "\\\\-" "" text)
+          text (replace-regexp-in-string "---" "—" text)
+          text (replace-regexp-in-string "--" "–" text)
+          text (replace-regexp-in-string "\\.\\.\\." "…" text)))
+  (funcall fn text (org-combine-plists
+                    info '(:with-smart-quotes nil :with-special-strings nil))))
+
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `with-eval-after-load' block, otherwise Doom's defaults may override your
