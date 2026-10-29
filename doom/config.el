@@ -274,8 +274,6 @@
       (goto-char end))
     t))
 
-<<<<<<< HEAD
-=======
 ;; Markdown export borrows HTML's smart quotes and special strings, so quotes,
 ;; "--" and "..." became &ldquo;, &#x2013; and &#x2026;, which only HTML-aware
 ;; viewers show as characters. Write the UTF-8 characters instead, as the
@@ -291,8 +289,6 @@
           text (replace-regexp-in-string "\\.\\.\\." "…" text)))
   (funcall fn text (org-combine-plists
                     info '(:with-smart-quotes nil :with-special-strings nil))))
-
->>>>>>> 3044c20177eea17b5867149e567592d969ded708
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `with-eval-after-load' block, otherwise Doom's defaults may override your
