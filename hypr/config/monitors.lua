@@ -10,8 +10,7 @@
 hl.monitor({
     output    = MONITOR1,
     mode      = "1920x1200@60",
-    position  = "320x1440", -- Monitors on top of eachother
-    -- position  = "0x900", -- Monitors next to eachother
+    position  = "-1920x300", -- Monitors on top of eachother
     scale     = "1",
 })
 
@@ -19,6 +18,13 @@ hl.monitor({
     output = "desc:Dell Inc. DELL AW2723DF 19WMNP3",
     mode = "2560x1440@144",
     position = "0x0", -- Monitors on top of eachother
-    -- position = "1920x0", -- Monitors next to eachother
     scale = "1",
+})
+
+hl.monitor({
+    output = "desc:Hewlett Packard HP E242 CNC7190C80",
+    mode = "1920x1200",
+    position = "2560x200",
+    scale="1",
+
 })

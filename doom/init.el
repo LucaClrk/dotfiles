@@ -81,8 +81,13 @@
        ;;eshell            ; the elisp shell that works everywhere
        ;;shell             ; simple shell REPL for Emacs
        ;;term              ; basic terminal emulator for Emacs
+<<<<<<< HEAD
        vterm               ; almost the best terminal emulation in Emacs
        ;;ghostel           ; the best terminal emulation in Emacs
+=======
+       ;; vterm            ; almost the best terminal emulation in Emacs
+       ghostel           ; the best terminal emulation in Emacs
+>>>>>>> 3044c20177eea17b5867149e567592d969ded708
 
        :checkers
        syntax              ; tasing you for every semicolon you forget
@@ -93,9 +98,15 @@
        ;;ansible
        ;;biblio            ; Writes a PhD for you (citation needed)
        ;;collab            ; buffers with friends
+<<<<<<< HEAD
        ;;debugger          ; stepping through code, to help you add bugs
        ;;direnv
        ;;docker
+=======
+       debugger          ; stepping through code, to help you add bugs
+       ;;direnv
+       docker
+>>>>>>> 3044c20177eea17b5867149e567592d969ded708
        ;;editorconfig      ; let someone else argue about tabs vs spaces
        ;;ein               ; tame Jupyter notebooks with emacs
        (eval +overlay)     ; run code, run (also, repls)
@@ -103,6 +114,7 @@
        ;;llm               ; when I said you needed friends, I didn't mean...
        (lsp +eglot)        ; M-x vscode
        magit             ; a git porcelain for Emacs
+<<<<<<< HEAD
        ;;make              ; run make tasks from Emacs
        ;;pass              ; password manager for nerds
        ;;pdf               ; pdf enhancements
@@ -110,6 +122,15 @@
        ;;tmux              ; an API for interacting with tmux
        ;;tree-sitter       ; syntax and parsing, sitting in a tree...
        ;;upload            ; map local to remote projects via ssh/ftp
+=======
+       make              ; run make tasks from Emacs
+       ;;pass              ; password manager for nerds
+       pdf               ; pdf enhancements
+       ;;terraform         ; infrastructure as code
+       ;;tmux              ; an API for interacting with tmux
+       tree-sitter       ; syntax and parsing, sitting in a tree...
+       upload            ; map local to remote projects via ssh/ftp
+>>>>>>> 3044c20177eea17b5867149e567592d969ded708
 
        :os
        (:if (featurep :system 'macos) macos)  ; improve compatibility with macOS
@@ -194,7 +215,11 @@
        ;;emms
        ;;everywhere        ; *leave* Emacs!? You must be joking
        ;;irc               ; how neckbeards socialize
+<<<<<<< HEAD
        ;;(rss +org)        ; emacs as an RSS reader
+=======
+       (rss +org)        ; emacs as an RSS reader
+>>>>>>> 3044c20177eea17b5867149e567592d969ded708
 
        :config
        ;;literate
