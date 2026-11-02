@@ -241,7 +241,19 @@
   ;; The open CLOCK: line on disk is what gets resumed, so save it right away.
   (add-hook! 'org-clock-in-hook
     (with-current-buffer (marker-buffer org-clock-marker)
-      (save-buffer))))
+      (save-buffer)))
+  ;; Org tracks the running clock with a marker into its buffer, so killing
+  ;; that buffer loses the clock even when you decline to clock out: clocking
+  ;; out then says "No active clock", and clocking in finds the open CLOCK:
+  ;; line and asks to resolve it. Bury the buffer instead of killing it.
+  (defun my/org-clock-bury-instead-of-kill-h ()
+    (if (not (eq (current-buffer) (org-clocking-buffer)))
+        t
+      (bury-buffer)
+      (message "Clock is running in %s; buried it instead of killing it"
+               (buffer-name))
+      nil))
+  (add-hook 'kill-buffer-query-functions #'my/org-clock-bury-instead-of-kill-h))
 
 ;; org-clock loads lazily, so resume a saved clock once Emacs is idle.
 (run-with-idle-timer 1 nil (lambda () (require 'org-clock) (org-clock-load)))
