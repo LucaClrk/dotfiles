@@ -49,18 +49,121 @@
 (run-with-idle-timer 10 nil #'my/mail-auto-sync)
 (run-with-timer (* 5 60) (* 5 60) #'my/mail-auto-sync)
 
+(defun my/mail-sender ()
+  "Address in the From header of the message in this buffer."
+  (save-restriction
+    (message-narrow-to-headers-or-head)
+    (cadr (mail-extract-address-components (message-fetch-field "from")))))
+
 ;; Gmail sends as the signed-in account, so send through the repository of the
 ;; account in the From header.
 (defun my/mail-use-sender-account-h ()
-  (let* ((from (cadr (mail-extract-address-components (message-fetch-field "from"))))
+  (let* ((from (my/mail-sender))
          (repo (or (cdr (assoc-string from my/mail-accounts t))
                    (user-error "No Gmail account for sender %s" from))))
     (setq-local message-sendmail-extra-arguments
                 `("send" "--quiet" "-t" "-C" ,(expand-file-name repo)))))
 
+;; Mail from the Robaws account is signed the way Apple Mail signed it: a
+;; sign-off, then signature.png, a picture with my photo and contact details.
+;; The compose buffer shows the signature as text. When the message is sent
+;; with that signature intact, it also gets an HTML version showing the
+;; picture. The picture is attached inline and referenced by cid:, as Apple
+;; Mail does, so it needs no hosting and isn't blocked like a remote image.
+;; A message with MML parts other than attachments (a forward, a signed mail)
+;; goes out as plain text only.
+(defvar my/mail-signature-accounts '("luca@robaws.be")
+  "Senders whose mail gets the signature.")
+
+(defvar my/mail-signature-greeting
+  "Met vriendelijke groeten,\nLuca De Clerck\nFull Stack Developer"
+  "Signature text, shown above the picture.")
+
+(defvar my/mail-signature-details
+  "Robaws\nluca@robaws.com\n+32 56 22 22 29\nwww.robaws.com\nBlokkestraat 41B, 8550 Zwevegem"
+  "What the signature picture says, for the plain-text version.")
+
+(defvar my/mail-signature-text
+  (concat my/mail-signature-greeting "\n" my/mail-signature-details))
+
+(defvar my/mail-signature-image (expand-file-name "signature.png" doom-user-dir))
+
+(defun my/mail-signature ()
+  "Text signature of the sender of the message in this buffer, if any."
+  (when-let* ((from (my/mail-sender)))
+    (when (member-ignore-case from my/mail-signature-accounts)
+      my/mail-signature-text)))
+
+(defun my/mail-html (text)
+  "TEXT as HTML, keeping its line breaks and linking its web addresses."
+  (let ((start 0) html)
+    (while (string-match "https?://[^][ \t\n<>\"]*[^][ \t\n<>\".,;:!?()']"
+                         text start)
+      (let ((before (substring text start (match-beginning 0)))
+            (url (url-insert-entities-in-string (match-string 0 text))))
+        (setq start (match-end 0))
+        (push (url-insert-entities-in-string before) html)
+        (push (format "<a href=\"%s\">%s</a>" url url) html)))
+    (push (url-insert-entities-in-string (substring text start)) html)
+    (string-replace "\n" "<br>" (apply #'concat (nreverse html)))))
+
+(defun my/mail-add-html-signature ()
+  "Turn the body into plain text plus HTML with the signature picture.
+Attachments (empty part tags, as `mml-attach-file' adds them) are kept."
+  (save-excursion
+    (message-goto-body)
+    (let* ((body (buffer-substring-no-properties (point) (point-max)))
+           (attachment "^<#part [^\n]*>\n<#/part>\n?")
+           (text (replace-regexp-in-string attachment "" body))
+           (signature (concat "\n-- \n" my/mail-signature-text))
+           (signature-start (string-search signature text))
+           (id (message-make-message-id))
+           (start 0)
+           attachments)
+      (when (and signature-start
+                 (not (string-search "<#" text))
+                 (file-exists-p my/mail-signature-image))
+        (while (string-match attachment body start)
+          (push (match-string 0 body) attachments)
+          (setq start (match-end 0)))
+        (delete-region (point) (point-max))
+        (when attachments (mml-insert-tag 'multipart 'type "mixed"))
+        (mml-insert-tag 'multipart 'type "alternative")
+        (mml-insert-tag 'part 'type "text/plain")
+        (insert text)
+        (unless (bolp) (insert "\n"))
+        (mml-insert-tag '/part)
+        (mml-insert-tag 'multipart 'type "related")
+        (mml-insert-tag 'part 'type "text/html")
+        ;; signature.png is 960x347, twice the size it's shown at, so it
+        ;; stays sharp on high-resolution screens.
+        (insert (format "<div style=\"white-space: pre-wrap\">%s<br>%s<br><br><img src=\"cid:%s\" width=\"480\" height=\"174\" alt=\"%s\">%s</div>\n"
+                        (my/mail-html (substring text 0 signature-start))
+                        (my/mail-html my/mail-signature-greeting)
+                        (substring id 1 -1)
+                        (url-insert-entities-in-string
+                         (string-replace "\n" ", " my/mail-signature-details))
+                        (my/mail-html (substring text (+ signature-start
+                                                         (length signature))))))
+        (mml-insert-tag '/part)
+        (mml-insert-empty-tag 'part 'type "image/png" 'disposition "inline"
+                              'filename my/mail-signature-image 'id id)
+        (mml-insert-tag '/multipart)
+        (mml-insert-tag '/multipart)
+        (when attachments
+          (apply #'insert (nreverse attachments))
+          (mml-insert-tag '/multipart))))))
+
 (after! notmuch
-  (setq sendmail-program "gmi")
+  (setq sendmail-program "gmi"
+        message-signature #'my/mail-signature)
   (add-hook 'message-send-mail-hook #'my/mail-use-sender-account-h)
+
+  ;; Sending encodes a copy of the compose buffer, so the HTML version is made
+  ;; there and a failed send leaves the buffer as it was.
+  (defadvice! my/mail-add-html-signature-a (&rest _)
+    :before #'message-encode-message-body
+    (my/mail-add-html-signature))
 
   ;; notmuch starts new mail and forwards from user.primary_email (robaws),
   ;; which the personal laptop doesn't have, so start them from the first
