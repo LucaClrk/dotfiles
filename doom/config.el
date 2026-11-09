@@ -64,6 +64,15 @@
     (setq-local message-sendmail-extra-arguments
                 `("send" "--quiet" "-t" "-C" ,(expand-file-name repo)))))
 
+;; `gmi send' uploads the message as it gets it, and Emacs ends lines with a
+;; bare LF. Apple Mail (over Gmail's IMAP) then showed the signature picture
+;; cut off, one byte per line of it short, as if the part size was counted
+;; with LF but served with CRLF. End lines with CRLF, as SMTP clients do.
+(defun my/mail-use-crlf-h ()
+  (goto-char (point-min))
+  (while (re-search-forward "\r?\n" nil t)
+    (replace-match "\r\n" t t)))
+
 ;; Mail from the Robaws account is signed the way Apple Mail signed it: a
 ;; sign-off, then signature.png, a picture with my photo and contact details.
 ;; The compose buffer shows the signature as text. When the message is sent
@@ -158,6 +167,8 @@ Attachments (empty part tags, as `mml-attach-file' adds them) are kept."
   (setq sendmail-program "gmi"
         message-signature #'my/mail-signature)
   (add-hook 'message-send-mail-hook #'my/mail-use-sender-account-h)
+  ;; Last, after the hooks that read the headers.
+  (add-hook 'message-send-mail-hook #'my/mail-use-crlf-h 90)
 
   ;; Sending encodes a copy of the compose buffer, so the HTML version is made
   ;; there and a failed send leaves the buffer as it was.
