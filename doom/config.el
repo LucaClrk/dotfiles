@@ -378,3 +378,12 @@
                   (:tsdk ,(expand-file-name
                            "typescript/lib"
                            (string-trim (shell-command-to-string "npm root -g"))))))))
+
+;; Java: jdtls writes Eclipse metadata (.project, .classpath, .settings/,
+;; .factorypath) into every Maven/Gradle module unless this JVM property is
+;; false; then it keeps them in its own workspace under ~/Library/Caches.
+;; Files already at a project root keep being used, so delete those once.
+(after! eglot
+  (add-to-list 'eglot-server-programs
+               '((java-mode java-ts-mode)
+                 "jdtls" "--jvm-arg=-Djava.import.generatesMetadataFilesAtProjectRoot=false")))
