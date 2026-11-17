@@ -51,3 +51,8 @@
 ;; (unpin! pinned-package another-pinned-package)
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;; (unpin! t)
+
+;; Local LLMs through Ollama: Copilot-style completion and an Aider front-end.
+;; Chat (gptel) comes from Doom's :tools llm module.
+(package! minuet)
+(package! aidermacs)

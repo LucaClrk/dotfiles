@@ -501,3 +501,52 @@ Attachments (empty part tags, as `mml-attach-file' adds them) are kept."
   (add-to-list 'eglot-server-programs
                '((java-mode java-ts-mode)
                  "jdtls" "--jvm-arg=-Djava.import.generatesMetadataFilesAtProjectRoot=false")))
+
+;; Local LLMs through Ollama; the same setup on the Mac and the Dell.
+;; Chat (gptel, from :tools llm, under SPC o l) always runs on the Mac's
+;; qwen3.8:27b: locally on the Mac, over the network from the Dell, which needs
+;; Ollama on the Mac to listen on the network (OLLAMA_HOST=0.0.0.0, or "Expose
+;; Ollama to the network" in its settings).
+(defvar my/ollama-chat-host
+  (if (featurep :system 'macos) "localhost:11434" "Lucas-MacBook-Pro.local:11434")
+  "Host and port of the Ollama that serves the chat model.")
+
+(after! gptel
+  (setq gptel-model 'qwen3.8:27b
+        gptel-backend (gptel-make-ollama "Ollama"
+                        :host my/ollama-chat-host
+                        :stream t
+                        :models '(qwen3.8:27b))))
+
+;; Autocomplete (minuet) uses the Ollama on this machine, with a small
+;; fill-in-the-middle model: `ollama pull qwen2.5-coder:1.5b-base' on each
+;; machine. Suggestions show as ghost text after a pause in code buffers; M-a
+;; accepts a line, M-A all of it, M-n/M-p cycle, M-e dismisses.
+(use-package! minuet
+  :hook (prog-mode . minuet-auto-suggestion-mode)
+  :config
+  (setq minuet-provider 'openai-fim-compatible
+        minuet-n-completions 1
+        minuet-context-window 512)
+  (plist-put minuet-openai-fim-compatible-options :end-point "http://localhost:11434/v1/completions")
+  (plist-put minuet-openai-fim-compatible-options :name "Ollama")
+  ;; Ollama needs no key, but minuet requires an environment variable that is set.
+  (plist-put minuet-openai-fim-compatible-options :api-key "TERM")
+  (plist-put minuet-openai-fim-compatible-options :model "qwen2.5-coder:1.5b-base")
+  (minuet-set-optional-options minuet-openai-fim-compatible-options :max_tokens 56)
+  (map! :map minuet-active-mode-map
+        "M-a" #'minuet-accept-suggestion-line
+        "M-A" #'minuet-accept-suggestion
+        "M-n" #'minuet-next-suggestion
+        "M-p" #'minuet-previous-suggestion
+        "M-e" #'minuet-dismiss-suggestion))
+
+;; Multi-file edits and commits with Aider (needs `aider' installed, e.g.
+;; `uv tool install aider-chat'), on the same Mac model as chat. SPC o l i.
+(use-package! aidermacs
+  :defer t
+  :init
+  (map! :leader :desc "Aider" "o l i" #'aidermacs-transient-menu)
+  :config
+  (setenv "OLLAMA_API_BASE" (concat "http://" my/ollama-chat-host))
+  (setq aidermacs-default-model "ollama_chat/qwen3.8:27b"))
