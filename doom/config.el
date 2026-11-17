@@ -504,11 +504,12 @@ Attachments (empty part tags, as `mml-attach-file' adds them) are kept."
 
 ;; Local LLMs through Ollama; the same setup on the Mac and the Dell.
 ;; Chat (gptel, from :tools llm, under SPC o l) always runs on the Mac's
-;; qwen3.8:27b: locally on the Mac, over the network from the Dell, which needs
-;; Ollama on the Mac to listen on the network (OLLAMA_HOST=0.0.0.0, or "Expose
-;; Ollama to the network" in its settings).
+;; qwen3.8:27b: locally on the Mac, over Tailscale from the Dell. Ollama on the
+;; Mac stays on localhost; `tailscale serve --bg --tcp 11434 tcp://localhost:11434'
+;; there forwards the tailnet to it. The Dell uses the Mac's Tailscale IP because
+;; Ollama refuses requests whose Host is the Mac's ts.net name.
 (defvar my/ollama-chat-host
-  (if (featurep :system 'macos) "localhost:11434" "Lucas-MacBook-Pro.local:11434")
+  (if (featurep :system 'macos) "localhost:11434" "100.94.171.82:11434")
   "Host and port of the Ollama that serves the chat model.")
 
 (after! gptel
