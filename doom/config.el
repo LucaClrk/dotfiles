@@ -550,8 +550,10 @@ Attachments (empty part tags, as `mml-attach-file' adds them) are kept."
         minuet-context-window 512)
   (plist-put minuet-openai-fim-compatible-options :end-point "http://localhost:11434/v1/completions")
   (plist-put minuet-openai-fim-compatible-options :name "Ollama")
-  ;; Ollama needs no key, but minuet requires an environment variable that is set.
-  (plist-put minuet-openai-fim-compatible-options :api-key "TERM")
+  ;; Ollama needs no key, but minuet sends nothing without one. A function, as
+  ;; an environment variable such as TERM is unset when Emacs starts from the
+  ;; desktop.
+  (plist-put minuet-openai-fim-compatible-options :api-key (lambda () "ollama"))
   (plist-put minuet-openai-fim-compatible-options :model "qwen2.5-coder:1.5b-base")
   (minuet-set-optional-options minuet-openai-fim-compatible-options :max_tokens 56)
   (map! :map minuet-active-mode-map
