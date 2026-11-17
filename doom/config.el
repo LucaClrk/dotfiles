@@ -512,12 +512,31 @@ Attachments (empty part tags, as `mml-attach-file' adds them) are kept."
   (if (featurep :system 'macos) "localhost:11434" "100.94.171.82:11434")
   "Host and port of the Ollama that serves the chat model.")
 
+;; On the Dell, gptel can also use the models in its own Ollama (pick them in
+;; SPC o l m); they are read from that Ollama when gptel loads.
+(defun my/ollama-local-models ()
+  "Names of the models in this machine's Ollama, or nil if it is not running."
+  (ignore-errors
+    (let ((buffer (url-retrieve-synchronously "http://localhost:11434/api/tags" t t 2)))
+      (unwind-protect
+          (with-current-buffer buffer
+            (goto-char url-http-end-of-headers)
+            (mapcar (lambda (model) (intern (alist-get 'name model)))
+                    (alist-get 'models (json-parse-buffer :object-type 'alist))))
+        (kill-buffer buffer)))))
+
 (after! gptel
   (setq gptel-model 'qwen3.8:27b
-        gptel-backend (gptel-make-ollama "Ollama"
+        gptel-backend (gptel-make-ollama "Mac"
                         :host my/ollama-chat-host
                         :stream t
-                        :models '(qwen3.8:27b))))
+                        :models '(qwen3.8:27b)))
+  (unless (featurep :system 'macos)
+    (when-let ((models (my/ollama-local-models)))
+      (gptel-make-ollama "Dell"
+        :host "localhost:11434"
+        :stream t
+        :models models))))
 
 ;; Autocomplete (minuet) uses the Ollama on this machine, with a small
 ;; fill-in-the-middle model: `ollama pull qwen2.5-coder:1.5b-base' on each
