@@ -556,6 +556,19 @@ Attachments (empty part tags, as `mml-attach-file' adds them) are kept."
   (plist-put minuet-openai-fim-compatible-options :api-key (lambda () "ollama"))
   (plist-put minuet-openai-fim-compatible-options :model "qwen2.5-coder:1.5b-base")
   (minuet-set-optional-options minuet-openai-fim-compatible-options :max_tokens 56)
+  ;; Ollama unloads the model after 5 idle minutes, and loading it again takes
+  ;; longer than a request may, so suggestions time out. Have Ollama load it in
+  ;; the background when a code buffer opens and on entering insert state.
+  (defun my/minuet-warm-up ()
+    (when minuet-auto-suggestion-mode
+      (let ((url-request-method "POST")
+            (url-request-extra-headers '(("Content-Type" . "application/json")))
+            (url-request-data
+             (json-encode `((model . ,(plist-get minuet-openai-fim-compatible-options :model))))))
+        (url-retrieve "http://localhost:11434/api/generate"
+                      (lambda (_) (kill-buffer)) nil t t))))
+  (add-hook 'minuet-auto-suggestion-mode-hook #'my/minuet-warm-up)
+  (add-hook 'evil-insert-state-entry-hook #'my/minuet-warm-up)
   (map! :map minuet-active-mode-map
         "M-a" #'minuet-accept-suggestion-line
         "M-A" #'minuet-accept-suggestion
